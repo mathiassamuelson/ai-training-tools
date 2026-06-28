@@ -591,6 +591,17 @@ def main():
              "uuid-join). Use 'na' for configs where stage ordering is not a variable (e.g. TP).",
     )
     parser.add_argument(
+        "--parallelism",
+        default="na",
+        choices=("tp1", "tp2", "pp2", "pp4", "na"),
+        help="Parallelism-config provenance tag for the served endpoint (default: %(default)s). "
+             "ASSERTED by the caller, not measured: this script is a pure HTTP client and has no "
+             "view of how the server behind the endpoint is parallelized. Recorded in metadata and "
+             "folded into the default filename (so e.g. TP=1 vs TP=2 sweeps no longer differ only "
+             "by timestamp); does NOT switch code paths and is NOT verified here (confirm the actual "
+             "topology via nvidia-smi uuid-join). Use 'na' to omit the segment.",
+    )
+    parser.add_argument(
         "--endpoint",
         default="http://localhost:8000",
         help="Base URL of the OpenAI-compatible server (default: %(default)s).",
@@ -643,9 +654,9 @@ def main():
         "--output",
         default=None,
         help="Output JSON file. Default: "
-             "<results-dir>/throughput_sweep_<backend>_<model>_c<N>[_<placement>]_<timestamp>.json "
-             "(placement segment included only when not 'na'). A relative path resolves against "
-             "the CWD, same as --results-dir.",
+             "<results-dir>/throughput_sweep_<backend>_<model>_c<N>[_<parallelism>][_<placement>]_<timestamp>.json "
+             "(parallelism and placement segments each included only when not 'na'). A relative path "
+             "resolves against the CWD, same as --results-dir.",
     )
     parser.add_argument(
         "--results-dir",
@@ -695,10 +706,11 @@ def main():
     else:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         slug = slugify_model_name(model_name)
+        parallelism_seg = "" if args.parallelism == "na" else f"_{args.parallelism}"
         placement_seg = "" if args.placement == "na" else f"_{args.placement}"
         filename = (
             f"throughput_sweep_{args.backend}_{slug}_c{args.concurrency}"
-            f"{placement_seg}_{timestamp}.json"
+            f"{parallelism_seg}{placement_seg}_{timestamp}.json"
         )
         output_path = Path(args.results_dir) / filename
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -723,6 +735,8 @@ def main():
     print(f"throughput_sweep: backend={args.backend} model={model_name}", file=sys.stderr)
     print(f"  endpoint={args.endpoint}", file=sys.stderr)
     print(f"  placement={args.placement} (provenance only — verify via nvidia-smi uuid-join)",
+          file=sys.stderr)
+    print(f"  parallelism={args.parallelism} (provenance only — verify via nvidia-smi uuid-join)",
           file=sys.stderr)
     print(f"  prompt_sizes={args.prompt_sizes}  max_tokens={args.max_tokens}", file=sys.stderr)
     print(f"  concurrency={args.concurrency}  iterations={args.iterations}  "
@@ -772,6 +786,7 @@ def main():
             "prompt_sizes_requested": args.prompt_sizes,
             "concurrency": args.concurrency,
             "placement": args.placement,
+            "parallelism": args.parallelism,
             "max_tokens": args.max_tokens,
             "iterations": args.iterations,
             "warmup": args.warmup,
