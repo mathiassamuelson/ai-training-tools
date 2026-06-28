@@ -1,0 +1,17 @@
+# rtx3090-ai-training-tools (T) — eval toolchain dependencies
+#
+# This repo holds HTTP-client tools that hit a vLLM OpenAI-compatible endpoint and the
+# Anthropic API. The serving stack itself (vLLM, CUDA, model weights) lives in the Docker
+# image, NOT here — so T's dependency surface is deliberately tiny.
+#
+# The ONLY third-party import across the toolchain is httpx. Every other import is the
+# Python standard library (json, asyncio, argparse, pathlib, subprocess, hashlib,
+# datetime, statistics, typing, uuid, platform, os, re, sys, time). The Anthropic judge
+# (rca_quality_judge.py) calls the API by hand over httpx (x-api-key / anthropic-version
+# headers) — there is no anthropic SDK dependency.
+#
+# Compatible-release floor rather than an exact pin: the tools use only httpx's stable
+# mainstream surface (Client, AsyncClient, HTTPError), so a patch-level pin would create
+# churn for no safety gain. Bounded below 1.0 to avoid the 1.x API break.
+
+httpx>=0.27,<1.0
