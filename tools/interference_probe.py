@@ -309,6 +309,7 @@ async def amain(args):
                     client, a["url"], a["model"], prompt, args.aggressor_max_tokens,
                     stop, st, args.aggressor_request_timeout)))
         total_inflight = args.aggressor_concurrency * len(aggressors)
+        flood_start_epoch = time.time()
         print(f"[info] aggressor flood up: {total_inflight} in-flight "
               f"({args.aggressor_concurrency}/target x {len(aggressors)} targets); "
               f"ramping {args.ramp_seconds}s", file=sys.stderr)
@@ -328,14 +329,19 @@ async def amain(args):
                           for i in agg_gpu_idxs), file=sys.stderr)
 
         # --- victim probe (loaded) ---
+        # Bracket the loaded victim-probe window in wall-clock so per-core CPU/softirq can be
+        # pulled from Prometheus over exactly this interval (query_range takes unix epochs).
         print(f"[info] running loaded victim sweep -> {victim_loaded_json}", file=sys.stderr)
+        loaded_probe_start_iso, loaded_probe_start_epoch = ts_utc(), time.time()
         rc = await run_victim_sweep(
             args.sweep, victim_endpoint, results_dir, victim_loaded_json,
             args.victim_prompt_sizes, args.victim_max_tokens,
             args.victim_iterations, args.victim_warmup)
+        loaded_probe_end_iso, loaded_probe_end_epoch = ts_utc(), time.time()
 
         # --- stop the flood ---
         stop.set()
+        flood_stop_epoch = time.time()
         await asyncio.gather(*flood_tasks, return_exceptions=True)
         agg_summary = [{
             "url": a["url"], "model": a["model"], "via_pool": a["via_pool"],
@@ -380,6 +386,14 @@ async def amain(args):
             "load_endpoint": "/v1/chat/completions (nonce-prefixed, APC-defeating)",
         },
         "placement": placement,
+        "loaded_window": {
+            "flood_start_epoch": round(flood_start_epoch, 3),
+            "victim_probe_start_utc": loaded_probe_start_iso,
+            "victim_probe_start_epoch": round(loaded_probe_start_epoch, 3),
+            "victim_probe_end_utc": loaded_probe_end_iso,
+            "victim_probe_end_epoch": round(loaded_probe_end_epoch, 3),
+            "flood_stop_epoch": round(flood_stop_epoch, 3),
+        },
         "saturation_sample": sat_sample,
         "nginx_upstream_distribution": nginx_dist,
         "victim_sweep_file": str(victim_loaded_json),

@@ -124,7 +124,7 @@ launch.
 role           model                               mode  gpus  port   MML       util
 orchestrator   google/gemma-4-31B-it-qat-w4a16-ct   TP=2  0,2   8000   131072    0.95
 worker1        google/gemma-4-12B-it-qat-w4a16-ct   TP=1   1    8001   131072    0.90
-worker2        google/gemma-4-12B-it-qat-w4a16-ct   TP=1   3    8002   131072    0.90
+worker2        google/gemma-4-12B-it-qat-w4a16-ct   TP=1   3    8003   131072    0.90
 ```
 
 ```bash

@@ -7,14 +7,14 @@
 # ROLE PRESETS (positional first arg; sets defaults, explicit flags still override):
 #   orchestrator   31B-QAT  TP=2  GPUs 0,2 (NVLink pair)   port 8000  MML 131072  util 0.95
 #   worker1        12B-QAT  TP=1  GPU 1                    port 8001  MML 131072  util 0.90
-#   worker2        12B-QAT  TP=1  GPU 3                    port 8002  MML 131072  util 0.90
+#   worker2        12B-QAT  TP=1  GPU 3                    port 8003  MML 131072  util 0.90
 # No role (and no --model) -> prints this help and exits 0. There is no silent zero-arg
 # launch: pick a role for the standard configs, or drive it manually with --model + flags.
 #
 # Usage:
 #   ./start-vllm.sh orchestrator             # 31B-QAT TP=2 on the NVLink pair (GPUs 0,2)
 #   ./start-vllm.sh worker1                  # 12B-QAT TP=1 on GPU 1, port 8001
-#   ./start-vllm.sh worker2                  # 12B-QAT TP=1 on GPU 3, port 8002
+#   ./start-vllm.sh worker2                  # 12B-QAT TP=1 on GPU 3, port 8003
 #   ./start-vllm.sh worker1 --max-model-len 65536    # role default overridden by explicit flag
 #   ./start-vllm.sh --model <hf-id> --mode tp --size 2 --max-model-len 65536   # full manual
 #   ./start-vllm.sh --model <hf-id> --mode pp --size 4 --device-order 0,2,1,3  # PP=4, steered
@@ -99,7 +99,7 @@ apply_role() {
       NAME="vllm-worker1-12b-gpu1" ;;
     worker2)
       ROLE="worker2"; MODEL="$WORKER_MODEL"
-      MODE="tp"; SIZE="1"; GPUS="3"; PORT="8002"
+      MODE="tp"; SIZE="1"; GPUS="3"; PORT="8003"
       MAX_MODEL_LEN="131072"; GPU_MEM_UTIL="0.90"
       NAME="vllm-worker2-12b-gpu3" ;;
     *) return 1 ;;
