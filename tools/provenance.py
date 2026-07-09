@@ -6,9 +6,9 @@ Two concerns, one anchor. Everything here is keyed off THIS module's __file__ (w
 T/tools/), so the answers are invariant to the current working directory:
 
   * tool_provenance() — the git SHA + dirty flag of the *tool* repo (T,
-    rtx3090-ai-training-tools), the repo that holds the code + eval inputs that produced a
+    ai-training-tools), the repo that holds the code + eval inputs that produced a
     result. NEVER the SHA of the cwd. Post-split the tools run with cwd = R
-    (rtx3090-ai-training) because results are written into R; a cwd-based git read would pin the
+    (inference-engineering-training) because results are written into R; a cwd-based git read would pin the
     data repo instead of the code, re-introducing the dirty-by-sibling friction the split
     removed. Anchoring to __file__ records T's SHA from anywhere.
 

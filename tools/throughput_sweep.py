@@ -133,7 +133,7 @@ BACKENDS = ("llamacpp", "vllm-openai")
 SCHEMA_VERSION = 4  # v4: provenance moved to tool_git_sha/tool_git_dirty (shared module);
                     # results paths now resolve against CWD, not the tool repo.
 
-# Post-split: this tool lives in T (rtx3090-ai-training-tools) but is run from R, and results
+# Post-split: this tool lives in T (ai-training-tools) but is run from R, and results
 # are written into R. Git provenance is the TOOL repo's SHA (anchored to this file via the shared
 # provenance module — see tool_provenance), while output paths resolve against the CWD like any
 # ordinary CLI tool. The two were conflated pre-split (both keyed off the script's repo root);

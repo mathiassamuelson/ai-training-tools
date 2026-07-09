@@ -20,7 +20,7 @@
 #   tools/start-stack.sh staggered --image vllm/vllm-openai:v0.23.0   # override the single image
 #   tools/start-stack.sh staggered --host-label my-box   # tag results with a host id (default: omitted)
 #   tools/start-stack.sh staggered --model-12b <id> --model-31b <id> --mml-12b 131072 \
-#                                  --mml-31b 33024 --util-12b 0.90 --util-31b 0.95
+#                                  --mml-31b 131072 --util-12b 0.90 --util-31b 0.95
 #
 # Results path: phase-3-optimization-and-quantization/<week>/results/   (--week; default week-13)
 #
@@ -33,7 +33,8 @@
 #   patch, no --hf-overrides blob). Workers are TP=1 (--mode tp --size 1 --gpus <single id>);
 #   orchestrator is TP=2 (--mode tp --size 2 --gpus 0,2). Both tiers run the SAME image, pinned
 #   here and threaded to each launcher via --image.
-#   Notes: 31B launcher MML default is 131072 (provisional) -> we pass 33024 (Week 11 baseline).
+#   Notes: 31B launcher MML default is 131072 -> we pass 131072 (production ceiling; matches the
+#          start-vllm.sh orchestrator role preset).
 #          Both workers need DISTINCT --name (start-vllm.sh derives NAME=vllm-tp1 for both ->
 #          the 2nd docker run collides without distinct names). Util flag is --gpu-mem-util.
 # ============================================================================================
@@ -42,14 +43,13 @@ set -euo pipefail
 
 # ---- defaults (all overridable on the CLI; none hardcoded downstream) ----------------------
 MODEL_12B="google/gemma-4-12B-it-qat-w4a16-ct"
-MODEL_31B="RedHatAI/gemma-4-31B-it-FP8-block"
+MODEL_31B="google/gemma-4-31B-it-qat-w4a16-ct"
 MML_12B=131072
-MML_31B=33024
+MML_31B=131072
 UTIL_12B=0.90           # 12B native (v0.23.0) verified at util 0.90
-UTIL_31B=0.95           # MML 33024 needs 0.95: the cudagraph-profiling tax (persists on the
-                        # standard runner under v0.23.0) cuts effective util to ~0.9093, so a
-                        # nominal 0.90 leaves too little KV to admit a 33024 pool. Week 11
-                        # baseline 33024 was characterized at 0.95; Day 4 re-baseline confirmed.
+UTIL_31B=0.95           # 31B-QAT production util: MML 131072 (the max_position_embeddings
+                        # validation boundary) admits its KV pool at 0.95 (KV ceiling ~218K).
+                        # Matches the start-vllm.sh orchestrator role preset.
 PORT_W1=8001
 PORT_W2=8003
 PORT_ORCH=8000

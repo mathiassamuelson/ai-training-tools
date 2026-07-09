@@ -1,4 +1,4 @@
-# rtx3090-ai-training-tools (T) — eval toolchain dependencies
+# ai-training-tools (T) — eval toolchain dependencies
 #
 # This repo holds HTTP-client tools that hit a vLLM OpenAI-compatible endpoint and the
 # Anthropic API. The serving stack itself (vLLM, CUDA, model weights) lives in the Docker

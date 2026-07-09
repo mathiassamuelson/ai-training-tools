@@ -1,8 +1,8 @@
-# rtx3090-ai-training-tools (T)
+# ai-training-tools (T)
 
 Evaluation and benchmarking toolchain for the RTX 3090 AI-infrastructure training program.
 This is the **tools** repo. The **data** repo — results, journals, captures — is
-[`rtx3090-ai-training`](https://github.com/mathiassamuelson/rtx3090-ai-training) (R).
+[`inference-engineering-training`](https://github.com/mathiassamuelson/inference-engineering-training) (R).
 
 The split: **T holds the code and the bundled eval inputs; R holds the outputs.** Tools live
 here, you run them from R, and results land in R. The two were one repo until the Week-14 split;
@@ -82,8 +82,8 @@ Output paths, by contrast, resolve against the **CWD** like any ordinary CLI too
 Run tools **from the data repo (R)** so results land in R:
 
 ```bash
-cd ~/work/rtx3090-ai-training                                   # CWD = R
-T=~/work/rtx3090-ai-training-tools                              # T checkout
+cd ~/work/inference-engineering-training                        # CWD = R
+T=~/work/ai-training-tools                                      # T checkout
 
 python3 "$T/tools/throughput_sweep.py" \
     --backend vllm-openai --endpoint http://localhost:8000 \
@@ -104,7 +104,7 @@ judge's process env, so the key never appears on a command line or in `~/.bash_h
 # one-time key setup (no history exposure):
 mkdir -p ~/.config && ( umask 077; cat > ~/.config/anthropic.key )   # paste key, Enter, Ctrl-D
 
-cd ~/work/rtx3090-ai-training
+cd ~/work/inference-engineering-training
 "$T/tools/run-judge.sh" --mode pairwise --a A.json --b B.json --judge-model <id> \
     --reference-prompt "$T/prompts/operator-copilot-rca-system-prompt.md" \
     --results-dir phase-3-optimization-and-quantization/week-14/results
